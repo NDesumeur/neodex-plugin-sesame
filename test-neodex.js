@@ -15,7 +15,7 @@ module.exports = async ({ pj, sleep }) => {
   const n = await rule(), l = await label();
   if (n !== 7 || !/Les chiffres font 20/.test(l)) throw new Error('le calcul doit casser la somme des chiffres : « ' + l + ' »');
   if (process.env.NEO_SHOTS) {  // jusqu'au bout : lit la capitale et la devinette demandées dans le code du jeu, construit le mot de passe et valide
-    const src = require('fs').readFileSync(require('path').join(process.env.NEO_LOCAL || __dirname, 'index.js'), 'utf8');
+    const src = require('fs').readFileSync(require('path').join((process.env.NEO_LOCAL || '').split(';').find(d => d.endsWith('-sesame')) || __dirname, 'index.js'), 'utf8');
     const caps = [...src.split('\n').find(x => x.startsWith('const SX_CAPS')).matchAll(/\['([^']+)', '([a-z]+)'\]/g)];
     const rids = [...src.split('\n').find(x => x.startsWith('const SX_RIDDLES')).matchAll(/\['([^']+)', \[([^\]]+)\]\]/g)].map(m => [m[1], m[2].split(', ').map(a => a.slice(1, -1))]);
     const sum = p => [...p].filter(c => c >= '0' && c <= '9').reduce((a, c) => a + +c, 0), prime = k => { for (let i = 2; i * i <= k; i++) if (k % i === 0) return false; return k > 1; };
