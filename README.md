@@ -31,3 +31,7 @@ Tes records sont enregistrés par NeoDex, sauvegardés et synchronisés entre te
 Dans NeoDex : **NeoStore → À découvrir → Sésame → Installer**.
 
 Développer un plugin : voir le [SDK NeoDex](https://github.com/NDesumeur/neodex-sdk).
+
+## Plein écran
+
+Le bouton « PLEIN ÉCRAN » met le jeu en plein écran : la case où l’on tape reste en haut, les règles prennent le reste de l’écran. Les règles grandissent aussi avec la fenêtre.

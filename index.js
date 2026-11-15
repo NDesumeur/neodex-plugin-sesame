@@ -5,13 +5,16 @@ const HTML = `<div class="appWrap wide">
   <div class="gMain"><div class="gameBox"><canvas id="sxCanvas" width="240" height="250" role="img" aria-label="Sésame"></canvas></div>
     <div class="gSide">
       <div class="sysCard"><b>RECORDS</b><div class="gStats" id="sxStats"></div></div>
-      <div class="row"><button class="btn main" id="sxNew">NOUVELLE PARTIE</button></div>
+      <div class="row"><button class="btn main" id="sxNew">NOUVELLE PARTIE</button><button class="btn" id="sxFs">PLEIN ÉCRAN</button></div>
       <div class="hint">Invente un mot de passe. Chaque règle respectée en fait apparaître une nouvelle, et les anciennes doivent rester vraies. Les règles se marchent dessus : les chiffres doivent faire 20, mais il faut aussi un calcul et l'heure qu'il est ; un fromage, mais pas plus de trois E… En rouge, ce qui ne va pas ; en vert, ce qui est bon. Quand les seize règles sont vertes, Entrée pour valider. Pour l'émoji : Windows + point.</div>
     </div></div>
 </div>`;
 const CSS = `.gMain{display:flex;gap:22px;align-items:flex-start;flex-wrap:wrap}
 .gameBox{display:grid;place-items:center;padding:10px;background:#05010b;flex:0 0 auto;position:relative}
-.gameBox canvas{height:min(72vh,560px);width:auto;aspect-ratio:240/250;image-rendering:pixelated;cursor:var(--cp,pointer);touch-action:none}
+.gameBox:fullscreen{display:flex!important;flex-direction:column;align-items:center;justify-content:center;padding:12px}
+.gameBox:fullscreen .sxIn{width:min(100%,calc((100vh - 84px) * 240 / 250))!important}
+.gameBox:fullscreen canvas{height:calc(100vh - 84px);max-width:100%;object-fit:contain}
+.gameBox canvas{height:min(calc(100vh - 210px),560px);min-height:300px;max-width:100%;width:auto;aspect-ratio:240/250;image-rendering:pixelated;cursor:var(--cp,pointer);touch-action:none}
 .gSide{display:flex;flex-direction:column;gap:14px;flex:1;min-width:250px;max-width:420px}
 .gSide .sysCard{display:flex;flex-direction:column}
 .gStats{display:grid;grid-template-columns:1fr auto;gap:4px 14px}
@@ -288,7 +291,7 @@ export default async function (ctx) {
   view.innerHTML = HTML;
   pxSkin(view.querySelector('.appWrap'), { title: "SÉSAME", T: {"k": "#0c0a12", "k2": "#16121e", "fill": "#221c2c", "fillOn": "#2e263a", "hl": "#3a3046", "line": "#62566e", "acc": "#7ee07a", "accL": "#d0ffd0", "accS": "#3a8a3e", "accD": "#0e2a12", "rivet": "#f0f0f8", "btn": "#3a3046", "btnHi": "#62566e", "btnLo": "#16121e", "btnHov": "#443852", "btnHovHi": "#82768e", "text": "#f4f0f8", "muted": "#c0b8cc", "acc2": "#7ee07a", "gold": "#ffd84a", "orange": "#ff8a3a", "red": "#ff4a3a", "green": "#7ee07a", "green2": "#2f8a3a", "bg": "#100c16", "bgDot": "#221c2c", "bgDot2": "#16121e", "spark": "#0e2a12", "spark2": "#7ee07a", "tile": ["................", "...:............", "................", "..........+.....", "................", "................", ".....:..........", "................", "................", ".............:..", "................", "..+.............", "................", ".........:......", "................", "................"]},
   emblem: ["....kkkk....", "...kwwwwk...", "..kwk..kwk..", "..kwk..kwk..", ".kkkkkkkkkk.", "kggggggggggg", "kggggkkggggk", "kgggkkkkgggk", "kggggkkggggk", "kggggggggggg", "kggggggggggk", "kkkkkkkkkkkk"],
-  icons: [[/^NOUVELLE/, 'play'], [/^RECORDS/, 'crown']] });
+  icons: [[/^NOUVELLE/, 'play'], [/^RECORDS/, 'crown'], [/^PLEIN/, 'full']] });
   const $ = id => view.querySelector('#' + id) || document.getElementById(id);
   const doc = async n => { try { return await folder.read(n); } catch { return null; } };
   const games = { best: {}, ...(await doc('games')) };
@@ -422,6 +425,7 @@ sxIn.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); sxSubmit();
 document.addEventListener('keydown', e => { if (view.classList.contains('on') && sx?.won && e.key === 'Enter' && e.target !== sxIn) { e.preventDefault(); sxNew(); sxIn.focus(); } });
 $('sxCanvas').onpointerdown = e => { e.preventDefault(); if (sx?.won) sxNew(); sxIn.focus(); };
 $('sxNew').onclick = () => { sxNew(); sxIn.focus(); };
+$('sxFs').onclick = () => { try { document.fullscreenElement ? document.exitFullscreen() : $('sxCanvas').parentElement.requestFullscreen?.().catch(() => {}); } catch {} setTimeout(() => sxIn.focus(), 100); };
 // un mot de passe qui respecte tout, pour une capitale, une devinette et une heure données (sert à vérifier que chaque partie a une solution)
 function sxSolve(st, hour) {
   const ans = SX_RIDDLES[st.rid][1].reduce((a, b) => [...a].filter(c => c === 'e').length <= [...b].filter(c => c === 'e').length ? a : b);

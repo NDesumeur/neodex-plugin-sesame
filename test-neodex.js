@@ -6,6 +6,13 @@ module.exports = async ({ pj, sleep }) => {
   const shot = async n => { if (!process.env.NEO_SHOTS) return; const d = await pj(`document.getElementById('sxCanvas').toDataURL()`); require('fs').writeFileSync(require('path').join(process.env.NEO_SHOTS, 'sesame-' + n + '.png'), Buffer.from(d.split(',')[1], 'base64')); };
   const rule = async () => { const l = await label(), m = /règle (\d+) sur/.exec(l); if (!m) throw new Error('règles illisibles : « ' + l + ' »'); return +m[1]; };
   await sleep(500);
+  // le plein écran : la case et les règles remplissent l'écran ; puis la place prise dans la fenêtre
+  await pj(`document.getElementById('sxFs').click(), 0`); await sleep(700);
+  const fs = await pj(`(() => { const c = document.getElementById('sxCanvas'), r = c.getBoundingClientRect(), i = document.querySelector('.sxIn').getBoundingClientRect(); return document.fullscreenElement === c.parentElement && r.bottom <= innerHeight + 1 && i.top >= -1 && r.height > innerHeight * 0.8 && document.activeElement.classList.contains('sxIn'); })()`);
+  await pj(`document.fullscreenElement && document.exitFullscreen(), 0`); await sleep(300);
+  if (!fs) throw new Error('le plein écran ne remplit pas l’écran');
+  const L = await pj(`(() => { const r = document.getElementById('sxCanvas').getBoundingClientRect(); let s = 0; for (let e = document.getElementById('sxCanvas').parentElement; e; e = e.parentElement) s += e.scrollTop; return { bottom: Math.round(r.bottom + s), h: Math.round(r.height), wh: innerHeight, ww: innerWidth, sw: document.documentElement.scrollWidth }; })()`);
+  if (L.bottom > L.wh + 1 || L.sw > L.ww + 1 || L.h < 300) throw new Error('le jeu dépasse la fenêtre ou reste petit : ' + JSON.stringify(L));
   await type('abc'); await sleep(400); await shot('0-depart');
   if (await rule() !== 1) throw new Error('une seule règle attendue au départ : « ' + (await label()) + ' »');
   await type('Abcdefg1!'); await sleep(400);

@@ -33,3 +33,7 @@ Your bests are saved by NeoDex, backed up and synced between your PCs if sync is
 In NeoDex: **NeoStore → Discover → Open Sesame → Install**.
 
 Building a plugin: see the [NeoDex SDK](https://github.com/NDesumeur/neodex-sdk).
+
+## Full screen
+
+The “FULL SCREEN” button puts the game in full screen: the box you type in stays at the top and the rules fill the rest of the screen. The rules also grow with the window.
