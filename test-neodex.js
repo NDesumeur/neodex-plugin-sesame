@@ -16,27 +16,18 @@ module.exports = async ({ pj, sleep }) => {
   await type('abc'); await sleep(400); await shot('0-depart');
   if (await rule() !== 1) throw new Error('une seule règle attendue au départ : « ' + (await label()) + ' »');
   await type('Abcdefg1!'); await sleep(400);
-  if (await rule() !== 5) throw new Error('5 règles attendues : « ' + (await label()) + ' »');
-  await type('Abcdfg99!2lundi'); await sleep(400);
-  await type('Abcdfg99!2lundi42'); await sleep(500); await shot('1-conflit');
-  const n = await rule(), l = await label();
-  if (n !== 7 || !/Les chiffres font 20/.test(l)) throw new Error('le calcul doit casser la somme des chiffres : « ' + l + ' »');
-  if (process.env.NEO_SHOTS) {  // jusqu'au bout : lit la capitale et la devinette demandées dans le code du jeu, construit le mot de passe et valide
-    const src = require('fs').readFileSync(require('path').join((process.env.NEO_LOCAL || '').split(';').find(d => d.endsWith('-sesame')) || __dirname, 'index.js'), 'utf8');
-    const caps = [...src.split('\n').find(x => x.startsWith('const SX_CAPS')).matchAll(/\['([^']+)', '([a-z]+)'\]/g)];
-    const rids = [...src.split('\n').find(x => x.startsWith('const SX_RIDDLES')).matchAll(/\['([^']+)', \[([^\]]+)\]\]/g)].map(m => [m[1], m[2].split(', ').map(a => a.slice(1, -1))]);
-    const sum = p => [...p].filter(c => c >= '0' && c <= '9').reduce((a, c) => a + +c, 0), prime = k => { for (let i = 2; i * i <= k; i++) if (k % i === 0) return false; return k > 1; };
-    const build = core => { core += new Date().getHours() + 'h🐱'; const left = 20 - sum(core); core += '9'.repeat(Math.floor(left / 9)) + (left % 9 ? String(left % 9) : ''); let p = '!' + core + '!'; while (!prime([...p].length)) p = p.slice(0, -1) + 'x!'; return p; };
-    await type(build('LAlundicantal42')); await sleep(400);
-    const l1 = await label(), c1 = caps.find(m => l1.includes('La capitale ' + m[1]));
-    if (!c1) throw new Error('capitale non lue : « ' + l1 + ' »');
-    await type(build('LAlundicantal42' + c1[2])); await sleep(400);
-    const l2 = await label(), r1 = rids.find(r => l2.includes(r[0]));
-    if (!r1) throw new Error('devinette non lue : « ' + l2 + ' »');
-    const ans = r1[1].reduce((a, b) => (a.split('e').length <= b.split('e').length ? a : b));
-    await type(build('LAlundicantal42' + c1[2] + ans)); await sleep(500); await shot('2-tout-vert');
-    await pj(`document.querySelector('.sxIn').dispatchEvent(new KeyboardEvent('keydown', {key: 'Enter', bubbles: true})), 0`); await sleep(600); await shot('3-gagne');
-    if (!/gagné/.test(await label())) throw new Error('mot de passe refusé : « ' + (await label()) + ' »');
-  }
+  if (await rule() < 5) throw new Error('5 règles au moins attendues : « ' + (await label()) + ' »');
+  await shot('1-regles');
+  // chaque partie tire ses règles : deux parties de suite ne se ressemblent pas, la partie du jour est toujours la même
+  const deal = () => pj(`(() => { const s = document.getElementById('sxCanvas').__sx.st(); return s.rules.map(R => R.t('', s)).join('|') + '#' + s.sum + '#' + s.a + 'x' + s.b; })()`);
+  const d1 = await deal(); await pj(`document.getElementById('sxNew').click(), 0`); const d2 = await deal(); await pj(`document.getElementById('sxNew').click(), 0`); const d3 = await deal();
+  if (d1 === d2 && d2 === d3) throw new Error('les règles devaient changer d’une partie à l’autre');
+  const dd = []; for (let k = 0; k < 2; k++) { await pj(`document.getElementById('sxDaily').click(), 0`); dd.push(await deal()); } if (dd[0] !== dd[1]) throw new Error('partie du jour');
+  // jusqu'au bout : un mot de passe qui respecte les 16 règles tirées, puis Entrée
+  await type(await pj(`document.getElementById('sxCanvas').__sx.solve()`)); await sleep(500); await shot('2-tout-vert');
+  if (await pj(`(() => { const s = document.getElementById('sxCanvas').__sx.st(); return s.shown + '/' + s.okAt.every(Boolean); })()`) !== '16/true') throw new Error('16 règles attendues : « ' + (await label()) + ' » ' + await pj(`document.querySelector('.sxIn').value + ' / ' + JSON.stringify(document.getElementById('sxCanvas').__sx.st().pw)`));
+  await pj(`document.querySelector('.sxIn').dispatchEvent(new KeyboardEvent('keydown', {key: 'Enter', bubbles: true})), 0`); await sleep(600); await shot('3-gagne');
+  const l = await label(); if (!/gagné/.test(l)) throw new Error('mot de passe refusé : « ' + l + ' »');
+  if (!/Partie du jour\s*faite/.test(await pj(`document.getElementById('sxStats').textContent`))) throw new Error('partie du jour : stats');
   return l;
 };

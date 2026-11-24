@@ -5,7 +5,7 @@ const HTML = `<div class="appWrap wide">
   <div class="gMain"><div class="gameBox"><canvas id="sxCanvas" width="240" height="250" role="img" aria-label="Sésame"></canvas></div>
     <div class="gSide">
       <div class="sysCard"><b>RECORDS</b><div class="gStats" id="sxStats"></div></div>
-      <div class="row"><button class="btn main" id="sxNew">NOUVELLE PARTIE</button><button class="btn" id="sxFs">PLEIN ÉCRAN</button></div>
+      <div class="row"><button class="btn main" id="sxNew">NOUVELLE PARTIE</button><button class="btn" id="sxDaily">PARTIE DU JOUR</button><button class="btn" id="sxFs">PLEIN ÉCRAN</button></div>
       <div class="hint">Invente un mot de passe. Chaque règle respectée en fait apparaître une nouvelle, et les anciennes doivent rester vraies. Les règles se marchent dessus : les chiffres doivent faire 20, mais il faut aussi un calcul et l'heure qu'il est ; un fromage, mais pas plus de trois E… En rouge, ce qui ne va pas ; en vert, ce qui est bon. Quand les seize règles sont vertes, Entrée pour valider. Pour l'émoji : Windows + point.</div>
     </div></div>
 </div>`;
@@ -333,16 +333,19 @@ const SX_RIDDLES = [['J’ai des aiguilles mais je ne couds pas', ['horloge', 'm
 const SX_ANIMALS = '🐱🐶🐭🐹🐰🦊🐻🐼🐨🐯🦁🐮🐷🐸🐵🐔🐧🐦🐤🦆🦉🐴🦄🐝🐛🦋🐌🐞🐢🐍🦎🐙🦑🦀🐠🐟🐬🐳🐋🦈🐊🐘🦒🐪🐫🦓🦍🐎🐖🐑🐐🦌🐕🐈🐓🦃🦚🦜🦢🐇🦝🦔🐁🐀🐉🦖🦕🐾';
 const sxDigits = p => [...p].filter(c => c >= '0' && c <= '9').reduce((a, c) => a + +c, 0);
 const sxPrime = n => { if (n < 2) return false; for (let i = 2; i * i <= n; i++) if (n % i === 0) return false; return true; };
-const sxHour = () => new Date().getHours() + 'h';
+let sxNowH = () => new Date().getHours();  // remplacée le temps de la vérification
+const sxHour = () => sxNowH() + 'h';
+const SX_MONTHS = ['janvier', 'fevrier', 'mars', 'avril', 'mai', 'juin', 'juillet', 'aout', 'septembre', 'octobre', 'novembre', 'decembre'], SX_PLANETS = ['mercure', 'venus', 'terre', 'mars', 'jupiter', 'saturne', 'uranus', 'neptune'];
+const SX_FRUITS = ['pomme', 'poire', 'kiwi', 'banane', 'cerise', 'fraise', 'mangue', 'ananas', 'citron', 'orange', 'prune', 'abricot', 'figue', 'datte', 'melon', 'raisin', 'peche', 'litchi'], SX_COLORS = ['rouge', 'bleu', 'vert', 'jaune', 'noir', 'blanc', 'violet', 'rose', 'gris', 'marron', 'orange'];
 // les règles, dans l'ordre où elles apparaissent ; ok(p, n, st) : p le mot de passe, n le même sans accents ni majuscules
 const SX_RULES = [
   {t: () => 'Au moins 8 caractères', ok: p => [...p].length >= 8},
   {t: () => 'Au moins un chiffre', ok: p => /\d/.test(p)},
   {t: () => 'Au moins une majuscule', ok: p => /\p{Lu}/u.test(p)},
   {t: () => 'Au moins un de ces symboles : ! ? # @ & %', ok: p => /[!?#@&%]/.test(p)},
-  {t: p => 'Les chiffres font 20 en tout (là : ' + sxDigits(p) + ')', ok: p => sxDigits(p) === 20},
+  {t: (p, st) => 'Les chiffres font ' + st.sum + ' en tout (là : ' + sxDigits(p) + ')', ok: (p, n, st) => sxDigits(p) === st.sum},
   {t: () => 'Un jour de la semaine', ok: (p, n) => SX_DAYS.some(d => n.includes(d))},
-  {t: () => 'Le résultat de 6 × 7', ok: p => p.includes('42')},
+  {t: (p, st) => 'Le résultat de ' + st.a + ' × ' + st.b, ok: (p, n, st) => p.includes(String(st.a * st.b))},
   {t: () => 'Un fromage français', ok: (p, n) => SX_CHEESE.some(c => n.includes(c))},
   {t: () => 'Une note de musique EN MAJUSCULES (DO, RÉ, MI, FA, SOL, LA, SI)', ok: p => SX_NOTES.some(x => p.includes(x))},
   {t: (p, st) => 'La capitale ' + SX_CAPS[st.cap][0], ok: (p, n, st) => n.includes(SX_CAPS[st.cap][1])},
@@ -352,16 +355,26 @@ const SX_RULES = [
   {t: (p, st) => 'La réponse à la devinette : « ' + SX_RIDDLES[st.rid][0] + ' »', ok: (p, n, st) => SX_RIDDLES[st.rid][1].some(a => n.includes(a))},
   {t: () => 'L’heure qu’il est, comme ceci : ' + sxHour(), ok: p => p.includes(sxHour())},
   {t: () => 'Commence et finit par le même caractère', ok: p => { const a = [...p]; return a.length > 1 && a[0] === a[a.length - 1]; }},
+  {t: () => 'Un mois de l’année', ok: (p, n) => SX_MONTHS.some(m => n.includes(m))},
+  {t: () => 'Une planète du système solaire', ok: (p, n) => SX_PLANETS.some(m => n.includes(m))},
+  {t: () => 'Un fruit', ok: (p, n) => SX_FRUITS.some(m => n.includes(m))},
+  {t: () => 'Une couleur', ok: (p, n) => SX_COLORS.some(m => n.includes(m))},
 ];
+// chaque partie : les quatre premières règles, puis 12 règles tirées au hasard parmi les autres, dans le désordre, avec leurs nombres tirés aussi
+function sxDeal(r) {
+  const rest = [...Array(SX_RULES.length - 4).keys()].map(i => i + 4); for (let i = rest.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [rest[i], rest[j]] = [rest[j], rest[i]]; }
+  return {rules: [0, 1, 2, 3, ...rest.slice(0, 12)].map(i => SX_RULES[i]), sum: 25 + Math.floor(r() * 8), a: 3 + Math.floor(r() * 7), b: 3 + Math.floor(r() * 7)};
+}
+const sxDay = (k = 0) => { const d = new Date(Date.now() - k * 864e5); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
 const sxs = gstore('sesame', {games: 0, wins: 0, bestTime: 0});
 let sx = null, sxac = null, sxMute = false;
 function sxBeep(f, d, type = 'square', slide = 0, vol = .04) { if (sxMute) return; try { sxac ??= new AudioContext(); const o = sxac.createOscillator(), g = sxac.createGain(), t = sxac.currentTime; o.type = type; o.frequency.setValueAtTime(f, t); if (slide) o.frequency.exponentialRampToValueAtTime(slide, t + d); g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.0001, t + d); o.connect(g).connect(sxac.destination); o.start(t); o.stop(t + d); } catch {} }
 // une règle à la fois : quand toutes celles qu'on voit sont vraies, la suivante apparaît (et ne disparaît plus)
 // une nouvelle partie garde le même objet : la boucle du jeu (gameLoop) continue de tourner dessus
 const renew = (old, o) => { if (!old) return o; for (const k of Object.keys(old)) if (k !== 'raf') delete old[k]; return Object.assign(old, o); };
-function sxNew() {
-  const g = sx?.g, r = seeded(Date.now() % 1e9);
-  sx = renew(sx, {g, mode: 'play', tick: 0, seen: 0, cap: Math.floor(r() * SX_CAPS.length), rid: Math.floor(r() * SX_RIDDLES.length), shown: 1, okAt: [], pw: '', t0: 0, time: 0, won: false, newAt: 0, scroll: 0});
+function sxNew(daily = false) {
+  const g = sx?.g, r = seeded(daily ? +sxDay().replace(/-/g, '') : Date.now() % 1e9);
+  sx = renew(sx, {g, daily, ...sxDeal(r), mode: 'play', tick: 0, seen: 0, cap: Math.floor(r() * SX_CAPS.length), rid: Math.floor(r() * SX_RIDDLES.length), shown: 1, okAt: [], pw: '', t0: 0, time: 0, won: false, newAt: 0, scroll: 0});
   if (sxIn) { sxIn.value = ''; sxIn.disabled = false; }
   sxInfo();
 }
@@ -369,17 +382,18 @@ function sxSet(p) {
   if (sx.won) return;
   if (!sx.t0 && p) sx.t0 = performance.now();
   sx.pw = p; const n = sxNorm(p);
-  sx.okAt = SX_RULES.map(R => R.ok(p, n, sx));
-  while (sx.shown < SX_RULES.length && sx.okAt.slice(0, sx.shown).every(Boolean)) { sx.shown++; sx.newAt = sx.tick; best('sesame', sx.shown - 1); sxBeep(660, .06); }
+  sx.okAt = sx.rules.map(R => R.ok(p, n, sx));
+  while (sx.shown < sx.rules.length && sx.okAt.slice(0, sx.shown).every(Boolean)) { sx.shown++; sx.newAt = sx.tick; best('sesame', sx.shown - 1); sxBeep(660, .06); }
 }
-const sxAllOk = () => sx.shown === SX_RULES.length && sx.okAt.every(Boolean);
+const sxAllOk = () => sx.shown === sx.rules.length && sx.okAt.every(Boolean);
 function sxSubmit() {
   if (sx.won) { sxNew(); return; }
   sxSet(sx.pw);
   if (!sxAllOk()) { sxBeep(160, .2, 'sawtooth', 90, .05); return; }
   sx.won = true; sx.time = Math.round((performance.now() - sx.t0) / 1000); sxs.games++; sxs.wins++;
   if (!sxs.bestTime || sx.time < sxs.bestTime) { sxs.bestTime = sx.time; sx.record = true; }
-  best('sesame', SX_RULES.length); saveGames(); sxInfo(); if (sxIn) sxIn.disabled = true;
+  if (sx.daily) { const d = (sxs.daily ??= {last: '', streak: 0, best: 0}); if (d.last !== sxDay()) { d.streak = d.last === sxDay(1) ? d.streak + 1 : 1; d.best = Math.max(d.best, d.streak); d.last = sxDay(); } }
+  best('sesame', sx.rules.length); saveGames(); sxInfo(); if (sxIn) sxIn.disabled = true;
   [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => sxBeep(f, .14), i * 90));
 }
 function sxWrap(text, max) { const lines = ['']; for (const w of text.split(' ')) { const t = (lines[lines.length - 1] + ' ' + w).trim(); if (PXK.layout(t).w > max && lines[lines.length - 1]) lines.push(w); else lines[lines.length - 1] = t; } return lines; }
@@ -394,7 +408,7 @@ function sxDraw() {
   const idx = [...Array(sx.shown).keys()].reverse(), order = [...idx.filter(i => !sx.okAt[i]), ...idx.filter(i => sx.okAt[i])];
   let y = HUD + 6, hidden = 0;
   for (const i of order) {
-    const lines = sxWrap((i + 1) + '. ' + SX_RULES[i].t(sx.pw, sx), W - 40), h = 8 + lines.length * 11, ok = sx.okAt[i];
+    const lines = sxWrap((i + 1) + '. ' + sx.rules[i].t(sx.pw, sx), W - 40), h = 8 + lines.length * 11, ok = sx.okAt[i];
     if (y + h > H - 36) { hidden++; continue; }
     const fresh = i === sx.shown - 1 && sx.tick - sx.newAt < 20 ? (20 - (sx.tick - sx.newAt)) * 6 : 0, x = 6 + fresh;
     px(g, '#05010b', x - 1, y - 1, W - 10, h + 2); px(g, ok ? '#1e3a22' : '#3a1a1a', x, y, W - 12, h); px(g, ok ? '#5ac05a' : '#e05a4a', x, y, 3, h); px(g, ok ? '#2e5a32' : '#5a2a2a', x, y, W - 12, 1);
@@ -405,16 +419,16 @@ function sxDraw() {
   if (hidden) pxFont(g, '+ ' + hidden + ' règle' + (hidden > 1 ? 's' : '') + ' respectée' + (hidden > 1 ? 's' : ''), W / 2, H - 22, '#7ab87a', 8, 'center');
   const all = sxAllOk();
   if (sx.won) px(g, '#0a0e0a', 0, 80, W, 70);
-  if (sx.won) gameText(g, W, [['SÉSAME, OUVRE-TOI !', '#ffd84a', 12], ['Les ' + SX_RULES.length + ' règles en ' + sxClock(sx.time), '#ffffff'], [sx.record ? 'NOUVEAU RECORD !' : 'Record ' + sxClock(sxs.bestTime), '#7ee07a'], ['Entrée : nouvelle partie', '#b8c8b8']], 100);
+  if (sx.won) gameText(g, W, [['SÉSAME, OUVRE-TOI !', '#ffd84a', 12], ['Les ' + sx.rules.length + ' règles en ' + sxClock(sx.time), '#ffffff'], [sx.record ? 'NOUVEAU RECORD !' : 'Record ' + sxClock(sxs.bestTime), '#7ee07a'], ['Entrée : nouvelle partie', '#b8c8b8']], 100);
   else if (all) { px(g, '#05010b', 39, H - 17, 162, 15); px(g, '#ffd84a', 40, H - 16, 160, 13); PXK.fill(g, 'Entrée : VALIDER', W / 2, H - 6, '#1a1018', 1, 'center'); }
   px(g, '#0a0e0a', 0, 0, W, HUD);
-  pxFont(g, 'Règle ' + sx.shown + ' / ' + SX_RULES.length, 4, 9, '#ffffff', 8);
+  pxFont(g, 'Règle ' + sx.shown + ' / ' + sx.rules.length + (sx.daily ? ' · du jour' : ''), 4, 9, sx.daily ? '#ffd84a' : '#ffffff', 8);
   pxFont(g, sxClock(sx.won ? sx.time : sx.t0 ? Math.floor((performance.now() - sx.t0) / 1000) : 0), W - 4, 9, '#a8c0a8', 8, 'right');
-  if (sx.tick % 20 === 0) g.canvas.setAttribute('aria-label', 'Sésame : règle ' + sx.shown + ' sur ' + SX_RULES.length + (sx.won ? ', gagné en ' + sx.time + ' s' : all ? ', toutes respectées' : '') + '. À corriger : ' + order.filter(i => !sx.okAt[i]).map(i => SX_RULES[i].t(sx.pw, sx)).join(' ; ') + '.');
+  if (sx.tick % 20 === 0) g.canvas.setAttribute('aria-label', 'Sésame : règle ' + sx.shown + ' sur ' + sx.rules.length + (sx.won ? ', gagné en ' + sx.time + ' s' : all ? ', toutes respectées' : '') + '. À corriger : ' + order.filter(i => !sx.okAt[i]).map(i => sx.rules[i].t(sx.pw, sx)).join(' ; ') + '.');
   if (sx.tick % 60 === 0 && !sx.won && sx.pw) sxSet(sx.pw);  // l'heure change : on revérifie de temps en temps
 }
 function sxInfo() {
-  $('sxStats').replaceChildren(...[['Meilleur temps', sxs.bestTime ? sxClock(sxs.bestTime) : '-'], ['Règle la plus loin', games.best.sesame || 0], ['Mots de passe acceptés', sxs.wins]].flatMap(([a, b]) => [el('span', '', a), el('b', '', String(b))]));
+  $('sxStats').replaceChildren(...[['Meilleur temps', sxs.bestTime ? sxClock(sxs.bestTime) : '-'], ['Règle la plus loin', games.best.sesame || 0], ['Mots de passe acceptés', sxs.wins], ['Partie du jour', sxs.daily?.last === sxDay() ? 'faite ✓' : 'à faire'], ['Série de jours', (sxs.daily?.last === sxDay() || sxs.daily?.last === sxDay(1) ? sxs.daily.streak : 0) + ' (record ' + (sxs.daily?.best || 0) + ')']].flatMap(([a, b]) => [el('span', '', a), el('b', '', String(b))]));
 }
 // la case où l'on tape, au-dessus des règles
 const sxIn = el('input', 'sxIn'); sxIn.type = 'text'; sxIn.maxLength = 120; sxIn.spellcheck = false; sxIn.autocomplete = 'off'; sxIn.placeholder = 'Ton mot de passe…'; sxIn.setAttribute('aria-label', 'Mot de passe');
@@ -425,30 +439,33 @@ sxIn.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); sxSubmit();
 document.addEventListener('keydown', e => { if (view.classList.contains('on') && sx?.won && e.key === 'Enter' && e.target !== sxIn) { e.preventDefault(); sxNew(); sxIn.focus(); } });
 $('sxCanvas').onpointerdown = e => { e.preventDefault(); if (sx?.won) sxNew(); sxIn.focus(); };
 $('sxNew').onclick = () => { sxNew(); sxIn.focus(); };
+$('sxDaily').onclick = () => { sxNew(true); sxIn.focus(); };
 $('sxFs').onclick = () => { try { document.fullscreenElement ? document.exitFullscreen() : $('sxCanvas').parentElement.requestFullscreen?.().catch(() => {}); } catch {} setTimeout(() => sxIn.focus(), 100); };
 // un mot de passe qui respecte tout, pour une capitale, une devinette et une heure données (sert à vérifier que chaque partie a une solution)
 function sxSolve(st, hour) {
   const ans = SX_RIDDLES[st.rid][1].reduce((a, b) => [...a].filter(c => c === 'e').length <= [...b].filter(c => c === 'e').length ? a : b);
-  let core = 'LA' + 'lundi' + 'cantal' + SX_CAPS[st.cap][1] + ans + '42' + hour + '🐱';
-  const left = 20 - sxDigits(core); if (left < 0) return null;
+  let core = 'LA' + 'lundi' + 'cantal' + 'mars' + 'kiwi' + 'noir' + SX_CAPS[st.cap][1] + ans + (st.a * st.b) + hour + '🐱';
+  const left = st.sum - sxDigits(core); if (left < 0) return null;
   core += '9'.repeat(Math.floor(left / 9)) + (left % 9 ? String(left % 9) : '');
   let p = '!' + core + '!'; while (!sxPrime([...p].length)) p = p.slice(0, -1) + 'x!';
   return p;
 }
 {  // vérification : pour chaque capitale, chaque devinette et chaque heure, il existe un mot de passe qui passe toutes les règles ; et une partie va au bout
   const bad = [], realHour = sxHour, keepS = JSON.stringify(sxs), keepB = games.best.sesame, keep = sx;
-  for (let h = 0; h < 24; h++) for (let cap = 0; cap < SX_CAPS.length; cap++) for (let rid = 0; rid < SX_RIDDLES.length; rid++) {
-    const st = {cap, rid}, p = sxSolve(st, h + 'h'), n = p && sxNorm(p);
-    const fails = p ? SX_RULES.map((R, i) => i === 14 ? p.includes(h + 'h') : R.ok(p, n, st)).map((v, i) => v ? -1 : i).filter(i => i >= 0) : ['aucun'];
-    if (fails.length) bad.push(h + 'h ' + SX_CAPS[cap][1] + ' ' + rid + ' : ' + fails);
-  }
+  const rr = seeded(7), dealt = new Set();
+  for (let k = 0; k < 400; k++) { const h = k % 24; sxNowH = () => h; const st = {...sxDeal(rr), cap: k % SX_CAPS.length, rid: (k * 7) % SX_RIDDLES.length}, p = sxSolve(st, h + 'h'), n = p && sxNorm(p); dealt.add(st.rules.map(R => SX_RULES.indexOf(R)).join());
+    const fails = p ? SX_RULES.map((R, i) => R.ok(p, n, st) ? -1 : i).filter(i => i >= 0) : ['aucun'];
+    if (fails.length) bad.push(h + 'h ' + st.sum + ' ' + st.a + '×' + st.b + ' ' + SX_CAPS[st.cap][1] + ' : ' + fails); }
+  sxNowH = () => new Date().getHours(); if (dealt.size < 300) bad.push('parties trop pareilles : ' + dealt.size);
+  { const A = sxDeal(seeded(20261123)), B = sxDeal(seeded(20261123)); if (A.rules.join() !== B.rules.join() || A.sum !== B.sum || A.rules.length !== 16) bad.push('partie du jour'); }
   sx = null; sxMute = true; sxNew(); sxSet('abc'); if (sx.shown !== 1) bad.push('règle 1 seule au départ');
-  sxSet('Abcdefg1!'); if (sx.shown !== 5) bad.push('5 règles après Abcdefg1! : ' + sx.shown);
+  sxSet('Abcdefg1!'); if (sx.shown < 5) bad.push('5 règles après Abcdefg1! : ' + sx.shown);
   sxSet(sxSolve(sx, sxHour())); sxSubmit(); if (!sx.won) bad.push('partie gagnée');
   console.assert(!bad.length, 'sesame', bad.slice(0, 5));
   Object.assign(sxs, JSON.parse(keepS)); if (keepB === undefined) delete games.best.sesame; else games.best.sesame = keepB; sx = keep; sxMute = false;
   sxIn.value = ''; sxIn.disabled = false;
 }
+$('sxCanvas').__sx = {st: () => sx, solve: () => sxSolve(sx, sxHour())};
 ctx.onOpen(() => {
   if (!sx || !sx.g) { sxNew(); sx.g = $('sxCanvas').getContext('2d'); }
   gameLoop(sx, 'sesame', sxUpdate, sxDraw); sxInfo(); setTimeout(() => sxIn.focus(), 50);

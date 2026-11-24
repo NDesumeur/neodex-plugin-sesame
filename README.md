@@ -4,6 +4,10 @@ Un jeu de logique en pixel art : invente un mot de passe qui respecte des règle
 
 *English version: [README.en.md](README.en.md)*
 
+## Règles au hasard et partie du jour (nouveau en 1.2.0)
+
+Chaque partie tire 12 règles parmi 16 (en plus des quatre premières), dans le désordre, avec des nombres différents (somme des chiffres, multiplication). Quatre règles nouvelles : un mois, une planète, un fruit, une couleur. La partie du jour est la même pour tout le monde, avec une série de jours.
+
 ## Commandes
 
 - **Tape** ton mot de passe dans la case au-dessus des règles.

@@ -6,6 +6,10 @@ A pixel art logic game: make up a password that follows more and more twisted ru
 
 **Words are checked in French**: the day of the week, the cheese, the capital city and the riddle answer must be French words (the interface is translated).
 
+## Random rules and daily game (new in 1.2.0)
+
+Each game draws 12 rules out of 16 (on top of the first four), shuffled, with different numbers (sum of digits, multiplication). Four new rules: a month, a planet, a fruit, a colour. The daily game is the same for everyone, with a day streak.
+
 ## Controls
 
 - **Type** your password in the box above the rules.

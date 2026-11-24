@@ -1,16 +1,19 @@
 {
   "id": "neodex.sesame",
   "name": "Sésame",
-  "version": "1.1.2",
+  "version": "1.2.0",
   "author": "NDesumeur",
-  "description": "Jeu de logique : invente un mot de passe qui respecte seize règles de plus en plus tordues. Chaque règle respectée en dévoile une nouvelle et les anciennes doivent rester vraies : les chiffres doivent faire 20 alors qu'il faut aussi un calcul et l'heure qu'il est, un fromage mais pas plus de trois E, une capitale, une devinette, une longueur qui est un nombre premier… Meilleur temps. Bouton plein écran : la case et les règles prennent tout l'écran.",
+  "description": "Jeu de logique : invente un mot de passe qui respecte seize règles de plus en plus tordues. Chaque règle respectée en dévoile une nouvelle et les anciennes doivent rester vraies : les chiffres doivent faire 20 alors qu'il faut aussi un calcul et l'heure qu'il est, un fromage mais pas plus de trois E, une capitale, une devinette, une longueur qui est un nombre premier… Meilleur temps. Bouton plein écran : la case et les règles prennent tout l'écran. Des règles tirées au hasard à chaque partie, et une partie du jour.",
   "icon": "icon.png",
   "entry": "index.js",
   "view": "sesame",
   "neobase": ">=4.0.0",
   "type": "app",
   "category": "Jeux",
-  "compatibility": ["windows", "linux"],
+  "compatibility": [
+    "windows",
+    "linux"
+  ],
   "syncMode": "aucune",
   "syncInfo": "Rien n'est synchronisé : tes records restent sur cet appareil.",
   "mobile": false,
