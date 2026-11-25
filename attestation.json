@@ -1,9 +1,9 @@
 {
   "pluginId": "neodex.sesame",
   "repo": "NDesumeur/neodex-plugin-sesame",
-  "version": "1.2.0",
-  "sha256": "a5ab450465229f507087654222f4a73b24f9f51ce3bc23251b26d85a7f5f9251",
-  "approvedAt": "2026-11-24T15:56:17.898Z",
+  "version": "1.3.0",
+  "sha256": "55fa30c280964e80f86911dc5273e5735c97f00c3c36ca8f61336a323c1cc60d",
+  "approvedAt": "2026-11-25T17:16:46.053Z",
   "neobase": ">=4.0.0",
-  "signature": "1gw2NFZtcneL8rYbiKPw5wovrfFhP95vgSYKtwcvfKOEnv9bT4NsYEq5OwxaAk7yaGFgpIP2BwhLOuqKyttIDw=="
+  "signature": "waYVSjrfFdg46H51iF/k3/7mv1D4fGH9jNdXEdAsPEWVnKjVW762VoCqTwyuUk0GNy6gIVmejPP8VNv+r4IICQ=="
 }
