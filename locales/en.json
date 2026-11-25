@@ -147,5 +147,17 @@
  "les règles devaient changer d’une partie à l’autre": "the rules should change from one game to the next",
  "16 règles attendues : «": "16 rules expected: «",
  "partie du jour : stats": "daily game: stats",
- "Jeu de logique : invente un mot de passe qui respecte seize règles de plus en plus tordues. Chaque règle respectée en dévoile une nouvelle et les anciennes doivent rester vraies : les chiffres doivent faire 20 alors qu'il faut aussi un calcul et l'heure qu'il est, un fromage mais pas plus de trois E, une capitale, une devinette, une longueur qui est un nombre premier… Meilleur temps. Bouton plein écran : la case et les règles prennent tout l'écran. Des règles tirées au hasard à chaque partie, et une partie du jour.": "Logic game: make up a password that follows sixteen more and more twisted rules. Each rule you meet reveals a new one and the old ones must stay true: the digits must add up to 20 while you also need a sum and the current time, a cheese but no more than three E's, a capital city, a riddle, a length that is a prime number… Answers are in French. Best time. Full screen button: the box and the rules fill the whole screen. Rules drawn at random each game, and a daily game."
+ "Jeu de logique : invente un mot de passe qui respecte seize règles de plus en plus tordues. Chaque règle respectée en dévoile une nouvelle et les anciennes doivent rester vraies : les chiffres doivent faire 20 alors qu'il faut aussi un calcul et l'heure qu'il est, un fromage mais pas plus de trois E, une capitale, une devinette, une longueur qui est un nombre premier… Meilleur temps. Bouton plein écran : la case et les règles prennent tout l'écran. Des règles tirées au hasard à chaque partie, et une partie du jour.": "Logic game: make up a password that follows sixteen more and more twisted rules. Each rule you meet reveals a new one and the old ones must stay true: the digits must add up to 20 while you also need a sum and the current time, a cheese but no more than three E's, a capital city, a riddle, a length that is a prime number… Answers are in French. Best time. Full screen button: the box and the rules fill the whole screen. Rules drawn at random each game, and a daily game.",
+ "À mi-chemin": "Halfway there",
+ "Respecter 8 règles en même temps": "Meet 8 rules at once",
+ "Sésame, ouvre-toi !": "Open sesame!",
+ "Faire accepter un mot de passe": "Get a password accepted",
+ "Serrurier": "Locksmith",
+ "Faire accepter 5 mots de passe": "Get 5 passwords accepted",
+ "Doigts de fée": "Nimble fingers",
+ "Faire accepter un mot de passe en moins de 5 minutes": "Get a password accepted in under 5 minutes",
+ "Pirate express": "Express hacker",
+ "Faire accepter un mot de passe en moins de 2 minutes": "Get a password accepted in under 2 minutes",
+ "Une semaine de secrets": "A week of secrets",
+ "Faire la partie du jour 7 jours de suite": "Play the game of the day 7 days in a row"
 }

@@ -300,6 +300,9 @@ export default async function (ctx) {
   const best = (k, v) => { const b = games.best[k]; if (v > (b ?? 0)) {  // un score nul n'est jamais un record
     games.best[k] = v; saveGames(); return true; } return false; };
   const gstore = (k, init) => (games[k] ??= init);
+  // les trophées de NeoDex (3.4.8 et plus) : succès et records déclarés dans plugin.json ; sur un NeoDex plus ancien, rien ne se passe
+  const trophy = id => { ctx.games?.unlock(id).catch(() => {}); };
+  const trophyRecord = (id, v) => { if (v != null && Number.isFinite(+v)) ctx.games?.record(id, +v).catch(() => {}); };
 function gameLoop(st, appKey, update, draw) {
   cancelAnimationFrame(st.raf);
   const STEP = 1000 / 60; let acc = 0, last = performance.now();
@@ -428,6 +431,7 @@ function sxDraw() {
   if (sx.tick % 60 === 0 && !sx.won && sx.pw) sxSet(sx.pw);  // l'heure change : on revérifie de temps en temps
 }
 function sxInfo() {
+  setTimeout(sxTrophies);
   $('sxStats').replaceChildren(...[['Meilleur temps', sxs.bestTime ? sxClock(sxs.bestTime) : '-'], ['Règle la plus loin', games.best.sesame || 0], ['Mots de passe acceptés', sxs.wins], ['Partie du jour', sxs.daily?.last === sxDay() ? 'faite ✓' : 'à faire'], ['Série de jours', (sxs.daily?.last === sxDay() || sxs.daily?.last === sxDay(1) ? sxs.daily.streak : 0) + ' (record ' + (sxs.daily?.best || 0) + ')']].flatMap(([a, b]) => [el('span', '', a), el('b', '', String(b))]));
 }
 // la case où l'on tape, au-dessus des règles
@@ -466,6 +470,13 @@ function sxSolve(st, hour) {
   sxIn.value = ''; sxIn.disabled = false;
 }
 $('sxCanvas').__sx = {st: () => sx, solve: () => sxSolve(sx, sxHour())};
+// les trophées, tirés des statistiques et des records gardés (aussi à l'ouverture : ce qui a été fait avant compte)
+function sxTrophies() {
+  const b = games.best.sesame || 0, t = sxs.bestTime, sig = [b, sxs.wins, t, sxs.daily?.best].join(); if (sig === sxTrophies.sig) return; sxTrophies.sig = sig;
+  trophyRecord('temps', t || null);
+  if (b >= 8) trophy('r8'); if (sxs.wins >= 1) trophy('premier'); if (sxs.wins >= 5) trophy('cinq');
+  if (t && t < 300) trophy('rapide'); if (t && t < 120) trophy('eclair'); if (sxs.daily?.best >= 7) trophy('jour7');
+}
 ctx.onOpen(() => {
   if (!sx || !sx.g) { sxNew(); sx.g = $('sxCanvas').getContext('2d'); }
   gameLoop(sx, 'sesame', sxUpdate, sxDraw); sxInfo(); setTimeout(() => sxIn.focus(), 50);

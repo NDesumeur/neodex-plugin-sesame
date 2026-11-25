@@ -1,7 +1,7 @@
 {
   "id": "neodex.sesame",
   "name": "Sésame",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "author": "NDesumeur",
   "description": "Jeu de logique : invente un mot de passe qui respecte seize règles de plus en plus tordues. Chaque règle respectée en dévoile une nouvelle et les anciennes doivent rester vraies : les chiffres doivent faire 20 alors qu'il faut aussi un calcul et l'heure qu'il est, un fromage mais pas plus de trois E, une capitale, une devinette, une longueur qui est un nombre premier… Meilleur temps. Bouton plein écran : la case et les règles prennent tout l'écran. Des règles tirées au hasard à chaque partie, et une partie du jour.",
   "icon": "icon.png",
@@ -22,5 +22,46 @@
   "sdk": "2.1.0",
   "permissions": [
     "storage"
+  ],
+  "succes": [
+    {
+      "id": "r8",
+      "nom": "À mi-chemin",
+      "texte": "Respecter 8 règles en même temps"
+    },
+    {
+      "id": "premier",
+      "nom": "Sésame, ouvre-toi !",
+      "texte": "Faire accepter un mot de passe"
+    },
+    {
+      "id": "cinq",
+      "nom": "Serrurier",
+      "texte": "Faire accepter 5 mots de passe"
+    },
+    {
+      "id": "rapide",
+      "nom": "Doigts de fée",
+      "texte": "Faire accepter un mot de passe en moins de 5 minutes"
+    },
+    {
+      "id": "eclair",
+      "nom": "Pirate express",
+      "texte": "Faire accepter un mot de passe en moins de 2 minutes",
+      "cache": true
+    },
+    {
+      "id": "jour7",
+      "nom": "Une semaine de secrets",
+      "texte": "Faire la partie du jour 7 jours de suite"
+    }
+  ],
+  "records": [
+    {
+      "id": "temps",
+      "nom": "Meilleur temps",
+      "sens": "bas",
+      "format": "temps"
+    }
   ]
 }
